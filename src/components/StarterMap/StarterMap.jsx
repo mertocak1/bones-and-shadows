@@ -1,7 +1,7 @@
 import { useGLTF } from "@react-three/drei";
 
 function Map1({ position }) {
-  const { scene } = useGLTF("src/assets/map/map1.glb");
+  const { scene } = useGLTF("src/assets/map/level1.glb");
   return (
     <>
       <primitive object={scene.clone(true)} scale={1} position={position} />

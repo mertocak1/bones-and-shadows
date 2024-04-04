@@ -5,6 +5,7 @@ import "./App.css";
 import Level1 from "./components/Map/Map";
 import { KeyboardControls, OrbitControls } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
+import { GameProvider } from "./GameContext";
 
 function App() {
   const keyboardMap = [
@@ -15,14 +16,16 @@ function App() {
     { name: "attack", keys: ["Space"] },
   ];
   return (
-    <KeyboardControls map={keyboardMap}>
-      <Canvas>
-        <Physics timeStep="vary">
-          <Level1 />
-        </Physics>
-        <OrbitControls />
-      </Canvas>
-    </KeyboardControls>
+    <GameProvider>
+      <KeyboardControls map={keyboardMap}>
+        <Canvas>
+          <Physics timeStep="vary">
+            <Level1 />
+          </Physics>
+          <OrbitControls />
+        </Canvas>
+      </KeyboardControls>
+    </GameProvider>
   );
 }
 

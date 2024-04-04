@@ -1,67 +1,101 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { useGLTF, useAnimations, useKeyboardControls } from "@react-three/drei";
-import Ecctrl, { EcctrlAnimation } from "ecctrl";
 import { useThree, useFrame } from "@react-three/fiber";
 import { Raycaster, Vector3 } from "three";
+import Ecctrl, { EcctrlAnimation } from "ecctrl";
+import { useGame } from "../../GameContext";
+import * as THREE from "three";
+const playerUrl = "/src/assets/char/Barbarian.glb";
 
-export default function Player() {
+export default function Player({ onAttack }) {
+  const playerRef = useRef();
+  const { scene, animations } = useGLTF(playerUrl);
+  const { actions } = useAnimations(animations, scene);
+  const { enemies, attackEnemy } = useGame();
   const { camera } = useThree();
 
-  const raycaster = useRef(new Raycaster());
-  const attackDirection = useRef(new Vector3());
-  const attackRange = 5;
-  const playerUrl = "/src/assets/char/Barbarian.glb";
-
-  const { scene, animations } = useGLTF("/src/assets/char/Barbarian.glb");
-  const { actions } = useAnimations(animations, scene);
-  console.log(actions);
-
   const [subscribeKeys, getKeys] = useKeyboardControls();
+
   useFrame(() => {
     const { forward, backward, leftward, rightward, attack } = getKeys();
+
+    // Movement logic...
     if (forward || backward || leftward || rightward) {
       actions.Idle.stop();
       actions.Walking_B.play();
-    } else if (attack) {
-      actions.Dualwield_Melee_Attack_Chop.play();
-
-      attackDirection.current.copy(camera.getWorldDirection(new Vector3()));
-
-      // Position the raycaster at the player's location, pointing in the attack direction
-      raycaster.current.set(camera.position, attackDirection.current);
-
-      // Check for intersections with targetable objects
-      const intersects = raycaster.current.intersectObjects(
-        scene.children,
-        true
-      );
-      const hitTargets = intersects.filter(
-        (intersect) => intersect.distance <= attackRange
-      );
-
-      // Process hits
-      hitTargets.forEach((hit) => {
-        console.log(`Hit: ${hit.object.name}`);
-        // Here you can do things like apply damage, trigger animations, etc.
-      });
     } else {
-      actions.Dualwield_Melee_Attack_Chop.stop();
       actions.Walking_B.stop();
       actions.Idle.play();
     }
+
+    // Attack logic
+    if (attack) {
+      actions.Dualwield_Melee_Attack_Chop.play();
+      // Trigger attack detection logic
+      performAttackDetection();
+    } else {
+      actions.Dualwield_Melee_Attack_Chop.stop();
+    }
   });
+
+  // Function to handle attack detection
+  function performAttackDetection() {
+    if (!playerRef.current) return; // This check is good.
+
+    const forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
+      playerRef.current.quaternion
+    );
+    const attackRange = 5; // Example attack range
+
+    enemies.forEach((enemy) => {
+      if (!enemy.ref.current) {
+        console.warn("Enemy ref is undefined. This enemy will be skipped.");
+        return; // Skip this iteration if the enemy's ref is undefined.
+      }
+
+      const enemyPosition = enemy.ref.current.position;
+      const playerPosition = playerRef.current.position.clone();
+      const toEnemyDirection = new THREE.Vector3()
+        .subVectors(enemyPosition, playerPosition)
+        .normalize();
+      const distance = enemyPosition.distanceTo(playerPosition);
+      const angle = forwardDirection.angleTo(toEnemyDirection);
+
+      if (distance <= attackRange && angle <= Math.PI / 4) {
+        console.log(`Enemy hit at distance ${distance}`, enemy.ref.current);
+
+        // Apply damage
+        attackEnemy(enemy.ref, 3); // Your existing logic here
+
+        // Optional: Apply a physical impulse for knock-back effect if your setup supports this
+      }
+    });
+  }
+
+  useEffect(() => {
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    const points = [playerRef.current.position, new THREE.Vector3(0, 0, -5)]; // Adjust endpoint based on expected direction and length
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const line = new THREE.Line(geometry, material);
+    scene.add(line); // Add line to the scene for visualization
+    return () => scene.remove(line); // Cleanup
+  }, [scene]);
 
   return (
     <Ecctrl
       debug={true}
       animated
-      position={[3, 1.3, 3]}
+      position={[0, 3, 0]}
       maxVelLimit={5}
       rayHitForgivness={0.5}
       rayLenght={10.3}
       camInitDis={-10}
+      capsuleRadius={0.4}
+      floatHeight={0.6}
+      springK={2}
+      dampingC={0.2}
     >
-      <primitive object={scene} position={[0, -0.9, 0]} />
+      <primitive object={scene} position={[0, -1.3, 0]} ref={playerRef} />
     </Ecctrl>
   );
 }
