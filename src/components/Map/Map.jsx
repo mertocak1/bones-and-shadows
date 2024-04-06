@@ -3,6 +3,7 @@ import { RigidBody } from "@react-three/rapier";
 import StarterMap from "../StarterMap/StarterMap";
 import Player from "../Player/Player";
 import Enemy from "../Enemy/Enemy";
+import Ecctrl, { EcctrlAnimation } from "ecctrl";
 
 export default function Level1() {
   return (
@@ -15,7 +16,10 @@ export default function Level1() {
           <StarterMap />
         </RigidBody>
 
-        <Player />
+        <Ecctrl debug={true} animated position={[0, 3.5, 0]} maxVelLimit={5}>
+          <Player />
+        </Ecctrl>
+
         <Enemy />
       </Suspense>
     </>

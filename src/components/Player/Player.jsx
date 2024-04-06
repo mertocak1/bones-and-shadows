@@ -2,7 +2,6 @@ import { useRef, useEffect } from "react";
 import { useGLTF, useAnimations, useKeyboardControls } from "@react-three/drei";
 import { useThree, useFrame } from "@react-three/fiber";
 import { Raycaster, Vector3 } from "three";
-import Ecctrl, { EcctrlAnimation } from "ecctrl";
 import { useGame } from "../../GameContext";
 import * as THREE from "three";
 const playerUrl = "/src/assets/char/Barbarian.glb";
@@ -21,11 +20,11 @@ export default function Player({ onAttack }) {
 
     // Movement logic...
     if (forward || backward || leftward || rightward) {
-      actions.Idle.stop();
       actions.Walking_B.play();
+      actions.Idle.stop();
     } else {
-      actions.Walking_B.stop();
       actions.Idle.play();
+      actions.Walking_B.stop();
     }
 
     // Attack logic
@@ -81,21 +80,5 @@ export default function Player({ onAttack }) {
     return () => scene.remove(line); // Cleanup
   }, [scene]);
 
-  return (
-    <Ecctrl
-      debug={true}
-      animated
-      position={[0, 3, 0]}
-      maxVelLimit={5}
-      rayHitForgivness={0.5}
-      rayLenght={10.3}
-      camInitDis={-10}
-      capsuleRadius={0.4}
-      floatHeight={0.6}
-      springK={2}
-      dampingC={0.2}
-    >
-      <primitive object={scene} position={[0, -1.3, 0]} ref={playerRef} />
-    </Ecctrl>
-  );
+  return <primitive object={scene} position={[0, -0.9, 0]} ref={playerRef} />;
 }
