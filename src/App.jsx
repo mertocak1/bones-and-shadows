@@ -19,7 +19,7 @@ function App() {
     <GameProvider>
       <KeyboardControls map={keyboardMap}>
         <Canvas>
-          <Physics timeStep="vary">
+          <Physics timeStep="vary" debug>
             <Level1 />
           </Physics>
           <OrbitControls />

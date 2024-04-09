@@ -7,38 +7,29 @@ export const useGame = () => useContext(GameContext);
 export const GameProvider = ({ children }) => {
   const [enemies, setEnemies] = useState([]);
 
-  const addEnemy = (enemyRef, initialHealth = 16) => {
+  const addEnemy = (enemyRef, initialHealth) => {
+    // Ensure the enemy is added with a unique key or identifier if needed
     setEnemies((prev) => [...prev, { ref: enemyRef, health: initialHealth }]);
   };
 
   const removeEnemy = (enemyRef) => {
-    setEnemies((prev) => prev.filter((enemy) => enemy.ref !== enemyRef));
+    setEnemies((prev) =>
+      prev.filter((enemy) => enemy.ref.current !== enemyRef.current)
+    );
   };
 
-  // Update to handle health reduction and enemy removal
   const attackEnemy = (enemyRef, damage) => {
-    console.log(`Attacking an enemy with ${damage} damage.`);
-    setEnemies((prev) => {
-      const updatedEnemies = prev
+    setEnemies((prev) =>
+      prev
         .map((enemy) => {
-          if (enemy.ref === enemyRef) {
-            const newHealth = Math.max(enemy.health - damage, 0);
-            console.log(`Enemy's new health: ${newHealth}`);
-            console.log("Current enemies after attack:", updatedEnemies);
+          if (enemy.ref.current === enemyRef.current) {
+            const newHealth = enemy.health - damage;
             return { ...enemy, health: newHealth };
           }
           return enemy;
         })
-        .filter((enemy) => {
-          const alive = enemy.health > 0;
-          if (!alive) {
-            console.log(`Removing enemy due to health ${enemy.health}.`);
-          }
-          return alive;
-        });
-
-      return updatedEnemies;
-    });
+        .filter((enemy) => enemy.health > 0)
+    ); // Filter out dead enemies
   };
 
   return (
@@ -49,3 +40,5 @@ export const GameProvider = ({ children }) => {
     </GameContext.Provider>
   );
 };
+
+// playerRef.current.children[0].position
