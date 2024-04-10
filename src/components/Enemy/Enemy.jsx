@@ -123,47 +123,39 @@ import { useGLTF } from "@react-three/drei";
 import { useGame } from "../../GameContext";
 import * as THREE from "three";
 
-export default function Enemy({ playerPosition, position, setPosition }) {
+export default function Enemy({ playerPositionRef, enemyPositionRef }) {
   const { scene } = useGLTF("/src/assets/enemies/Skeleton_Minion.glb");
   const enemyRef = useRef();
   const { addEnemy, removeEnemy } = useGame();
-
-  // Speed at which the enemy moves towards the player
-  const speed = 0.05;
-  // Distance threshold for enemy to start chasing the player
+  const enemyId = useRef(Math.random()).current;
+  const speed = 0.03;
   const chaseDistanceThreshold = 5;
 
+  useEffect(() => {
+    const enemyObject = { ref: enemyRef, health: 16, id: enemyId };
+    addEnemy(enemyObject);
+
+    return () => removeEnemy(enemyObject);
+  }, [addEnemy, removeEnemy, enemyId]);
+
   useFrame(() => {
-    if (enemyRef.current && playerPosition) {
-      // Compute the world position of the enemy
+    if (enemyRef.current && playerPositionRef.current) {
       const enemyWorldPosition = new THREE.Vector3();
-      const currPosition =
-        enemyRef.current.getWorldPosition(enemyWorldPosition);
-      setPosition(currPosition);
+      // Update the enemy's world position
+      enemyRef.current.getWorldPosition(enemyWorldPosition);
 
-      // Compute the distance to the player
-      const distanceToPlayer = currPosition.distanceTo(playerPosition);
-
-      // Only move the enemy if the player is within the specified distance
+      // Use playerPositionRef.current which has been updated in the Player component
+      const distanceToPlayer = enemyWorldPosition.distanceTo(
+        playerPositionRef.current
+      );
       if (distanceToPlayer < chaseDistanceThreshold) {
-        // Compute the direction from the enemy to the player
         const direction = new THREE.Vector3()
-          .subVectors(playerPosition, currPosition)
+          .subVectors(playerPositionRef.current, enemyWorldPosition)
           .normalize();
-
-        // Move the enemy towards the player
         enemyRef.current.position.add(direction.multiplyScalar(speed));
       }
     }
   });
-
-  useEffect(() => {
-    addEnemy(enemyRef, 16); // Assuming initial health is 16
-
-    return () => {
-      removeEnemy(enemyRef);
-    };
-  }, [addEnemy, removeEnemy]);
 
   return (
     <group>

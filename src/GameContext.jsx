@@ -19,17 +19,27 @@ export const GameProvider = ({ children }) => {
   };
 
   const attackEnemy = (enemyRef, damage) => {
-    setEnemies((prev) =>
-      prev
+    console.log(
+      "Before attack:",
+      enemies.map((e) => e.health)
+    );
+
+    setEnemies((enemies) =>
+      enemies
         .map((enemy) => {
           if (enemy.ref.current === enemyRef.current) {
             const newHealth = enemy.health - damage;
-            return { ...enemy, health: newHealth };
+            return { ...enemy, health: newHealth > 0 ? newHealth : 0 }; // Ensure health doesn't go below 0
           }
           return enemy;
         })
         .filter((enemy) => enemy.health > 0)
-    ); // Filter out dead enemies
+    ); // Remove dead enemies
+
+    console.log(
+      "After attack:",
+      enemies.map((e) => e.health)
+    );
   };
 
   return (

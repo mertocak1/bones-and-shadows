@@ -1,12 +1,14 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useRef } from "react";
 import { RigidBody } from "@react-three/rapier";
 import StarterMap from "../StarterMap/StarterMap";
 import Player from "../Player/Player";
 import Enemy from "../Enemy/Enemy";
+import Ecctrl, { EcctrlAnimation } from "ecctrl";
+import * as THREE from "three";
 
 export default function Level1() {
-  const [playerPosition, setPlayerPosition] = useState(null);
-  const [enemyPosition, setEnemyPosition] = useState(null);
+  const playerPositionRef = useRef(new THREE.Vector3());
+  const enemyPositionRef = useRef(new THREE.Vector3());
   return (
     <>
       <ambientLight intensity={0.5} />
@@ -17,16 +19,16 @@ export default function Level1() {
           <StarterMap />
         </RigidBody>
 
-        <Player
-          position={playerPosition}
-          setPosition={setPlayerPosition}
-          enemyPosition={enemyPosition}
-        />
+        <Ecctrl debug={true} animated position={[0, 5, 0]} maxVelLimit={5}>
+          <Player
+            playerPositionRef={playerPositionRef}
+            enemyPositionRef={enemyPositionRef}
+          />
+        </Ecctrl>
 
         <Enemy
-          playerPosition={playerPosition}
-          position={enemyPosition}
-          setPosition={setEnemyPosition}
+          playerPositionRef={playerPositionRef}
+          enemyPositionRef={enemyPositionRef}
         />
       </Suspense>
     </>
