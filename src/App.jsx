@@ -19,6 +19,7 @@ function App() {
     <GameProvider>
       <KeyboardControls map={keyboardMap}>
         <Canvas>
+          <color attach="background" args={["#242424"]} />
           <Physics timeStep="vary" debug>
             <Level1 />
           </Physics>
