@@ -86,14 +86,13 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
         type="dynamic"
         position={[6, 1, 5]}
         ref={rigidBodyRef}
-        colliders={false}
         linearDamping={5}
         mass={1}
         canSleep={false}
         lockTranslationY={true} // This locks the y-axis translation
+        rotation={[0, 3, 0]}
       >
         <primitive position={[0, 0.4, 0]} ref={enemyRef} object={scene} />
-        <CapsuleCollider args={[0.4, 0.5]} position={[0, 1.28, 0]} />
       </RigidBody>
     </group>
   );
