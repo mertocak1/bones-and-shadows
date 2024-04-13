@@ -4,7 +4,7 @@ import { useThree, useFrame } from "@react-three/fiber";
 import { useGame } from "../../GameContext";
 import * as THREE from "three";
 
-const playerUrl = "/src/assets/char/Barbarian.glb";
+const playerUrl = "/src/assets/char/barbar.glb";
 
 export default function Player({ playerPositionRef, enemyPositionRef }) {
   const playerRef = useRef();
@@ -21,19 +21,19 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
     // Movement logic...
     if (forward || backward || leftward || rightward) {
       actions.Walking_B.play();
-      actions.Idle.stop();
+      actions["2H_Melee_Idle"].stop();
     } else {
-      actions.Idle.play();
+      actions["2H_Melee_Idle"].play();
       actions.Walking_B.stop();
     }
 
     // Attack logic
     if (attack) {
-      actions.Dualwield_Melee_Attack_Chop.play();
+      actions["2H_Melee_Attack_Slice"].play();
       // Trigger attack detection logic
       performAttackDetection();
     } else {
-      actions.Dualwield_Melee_Attack_Chop.stop();
+      actions["2H_Melee_Attack_Slice"].stop();
     }
   });
 

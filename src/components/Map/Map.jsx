@@ -23,7 +23,7 @@ export default function Level1() {
           mass={1}
           debug={true}
           animated
-          position={[0, 5, 0]}
+          position={[-6, 5, 10]}
           maxVelLimit={5}
         >
           <Player

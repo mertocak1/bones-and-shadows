@@ -20,7 +20,7 @@ function App() {
       <KeyboardControls map={keyboardMap}>
         <Canvas>
           <color attach="background" args={["#242424"]} />
-          <Physics timeStep="vary" debug>
+          <Physics timeStep="vary">
             <Level1 />
           </Physics>
           <OrbitControls />

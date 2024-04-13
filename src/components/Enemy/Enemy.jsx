@@ -1,17 +1,21 @@
 import { useRef, useEffect } from "react";
-import { useFrame } from "@react-three/fiber";
-import { useGLTF } from "@react-three/drei";
+import { useFrame, useThree } from "@react-three/fiber";
+import { useGLTF, useAnimations } from "@react-three/drei";
 import { RigidBody, CapsuleCollider } from "@react-three/rapier";
 import { useGame } from "../../GameContext";
 import * as THREE from "three";
 
 export default function Enemy({ playerPositionRef, enemyPositionRef }) {
-  const { scene } = useGLTF("/src/assets/enemies/Skeleton_Minion.glb");
+  const { scene, animations } = useGLTF(
+    "/src/assets/enemies/Skeleton_Minion.glb"
+  );
+  const { actions } = useAnimations(animations, scene);
   const enemyRef = useRef();
   const rigidBodyRef = useRef();
   const { addEnemy, removeEnemy } = useGame();
   const enemyId = useRef(Math.random()).current;
-  const chaseDistanceThreshold = 5;
+  const chaseDistanceThreshold = 8;
+  const stableSpeed = 0.2; // Constant speed for the enemy
 
   useEffect(() => {
     const enemyObject = { ref: enemyRef, health: 16, id: enemyId };
@@ -23,62 +27,56 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
     if (
       !enemyRef.current ||
       !playerPositionRef.current ||
-      !enemyPositionRef.current
+      !enemyPositionRef.current ||
+      !rigidBodyRef.current
     ) {
       console.error("Reference missing, skipping frame.");
       return;
     }
 
-    // Retrieve the current position of the enemy.
     enemyRef.current.getWorldPosition(enemyPositionRef.current);
 
-    // Check if the enemy's current position is valid.
     if (
       isNaN(enemyPositionRef.current.x) ||
       isNaN(enemyPositionRef.current.y) ||
       isNaN(enemyPositionRef.current.z)
     ) {
       console.error("NaN position detected, resetting to default.");
-      enemyRef.current.position.set(-4, 1, -4); // Reset to a known good position
+      enemyRef.current.position.set(-4, 1, -4);
       return;
     }
 
-    // Calculate the distance to the player.
     const distanceToPlayer = enemyPositionRef.current.distanceTo(
       playerPositionRef.current
     );
 
     if (distanceToPlayer < chaseDistanceThreshold && distanceToPlayer > 0.1) {
-      // Compute the normalized direction vector from the enemy to the player.
       const direction = new THREE.Vector3()
         .subVectors(playerPositionRef.current, enemyPositionRef.current)
         .normalize();
+      actions.Walking_A.play();
+      actions.Idle.stop();
 
-      // Adjust the force magnitude to make it distance dependent, making the enemy move faster as it gets closer to the player.
-      const forceMagnitude = Math.min(
-        0.05 * (chaseDistanceThreshold - distanceToPlayer), // Increase force as the enemy gets closer
-        0.02 // Set an upper limit to the force to prevent excessive acceleration
+      const angle = Math.atan2(direction.x, direction.z);
+      const quaternion = new THREE.Quaternion().setFromAxisAngle(
+        new THREE.Vector3(0, 1, 0),
+        angle
       );
+      rigidBodyRef.current.setRotation(quaternion);
 
-      // Apply the calculated force to the enemy.
-      const force = direction.multiplyScalar(forceMagnitude);
+      const forward = new THREE.Vector3(0, 0, -1);
+      forward.applyQuaternion(quaternion);
+      forward.multiplyScalar(stableSpeed);
 
-      if (!force.toArray().some(isNaN) && force.length() < 0.05) {
-        // Check for a reasonable force magnitude and apply it.
-        rigidBodyRef.current.addForce({
-          x: force.x,
-          y: force.y,
-          z: force.z,
-        });
-      } else {
-        console.error(
-          "Computed force is invalid or too large:",
-          force.toArray()
-        );
-      }
-    } else if (distanceToPlayer <= 0.1) {
-      // Apply minimal force if very close to prevent jittering or other physics issues
+      rigidBodyRef.current.applyImpulse({
+        x: forward.x,
+        y: forward.y,
+        z: forward.z,
+      });
+    } else {
       rigidBodyRef.current.addForce({ x: 0, y: 0, z: 0 });
+      actions.Idle.play();
+      actions.Walking_A.stop();
     }
   });
 
@@ -86,13 +84,13 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
     <group>
       <RigidBody
         type="dynamic"
-        position={[-4, 1, -4]}
+        position={[6, 1, 5]}
         ref={rigidBodyRef}
         colliders={false}
         linearDamping={5}
         mass={1}
         canSleep={false}
-        lockRotations
+        lockTranslationY={true} // This locks the y-axis translation
       >
         <primitive position={[0, 0.4, 0]} ref={enemyRef} object={scene} />
         <CapsuleCollider args={[0.4, 0.5]} position={[0, 1.28, 0]} />
