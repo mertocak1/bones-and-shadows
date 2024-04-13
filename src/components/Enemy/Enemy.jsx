@@ -12,16 +12,16 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
   const { actions } = useAnimations(animations, scene);
   const enemyRef = useRef();
   const rigidBodyRef = useRef();
-  const { addEnemy, removeEnemy } = useGame();
+  const { addEnemy, removeEnemy, health } = useGame();
   const enemyId = useRef(Math.random()).current;
   const chaseDistanceThreshold = 8;
-  const stableSpeed = 0.2; // Constant speed for the enemy
+  const stableSpeed = 0.2;
 
   useEffect(() => {
-    const enemyObject = { ref: enemyRef, health: 16, id: enemyId };
+    const enemyObject = { ref: enemyRef, health, id: enemyId };
+    console.log({ enemyObject });
     addEnemy(enemyObject);
-    return () => removeEnemy(enemyObject);
-  }, [addEnemy, removeEnemy, enemyId]);
+  }, []);
 
   useFrame(() => {
     if (
@@ -50,7 +50,7 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
       playerPositionRef.current
     );
 
-    if (distanceToPlayer < chaseDistanceThreshold && distanceToPlayer > 0.1) {
+    if (distanceToPlayer < chaseDistanceThreshold && distanceToPlayer > 1) {
       const direction = new THREE.Vector3()
         .subVectors(playerPositionRef.current, enemyPositionRef.current)
         .normalize();
@@ -80,20 +80,22 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
     }
   });
 
-  return (
+  return health > 0 ? (
     <group>
       <RigidBody
         type="dynamic"
         position={[6, 1, 5]}
         ref={rigidBodyRef}
         linearDamping={5}
+        colliders={false}
         mass={1}
         canSleep={false}
-        lockTranslationY={true} // This locks the y-axis translation
+        lockTranslationY={true}
         rotation={[0, 3, 0]}
       >
         <primitive position={[0, 0.4, 0]} ref={enemyRef} object={scene} />
+        <CapsuleCollider args={[0.4, 0.5]} position={[0, 1.28, 0]} />
       </RigidBody>
     </group>
-  );
+  ) : null;
 }

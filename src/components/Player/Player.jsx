@@ -10,10 +10,12 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
   const playerRef = useRef();
   const { scene, animations } = useGLTF(playerUrl);
   const { actions } = useAnimations(animations, scene);
-  const { enemies, attackEnemy } = useGame();
+  // const { enemies, attackEnemy } = useGame();
+  const { attackEnemy } = useGame();
   const { camera } = useThree();
 
   const [subscribeKeys, getKeys] = useKeyboardControls();
+  let lastAttackTime = 0;
 
   useFrame(() => {
     const { forward, backward, leftward, rightward, attack } = getKeys();
@@ -30,8 +32,18 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
     // Attack logic
     if (attack) {
       actions["2H_Melee_Attack_Slice"].play();
-      // Trigger attack detection logic
-      performAttackDetection();
+
+      const now = Date.now();
+      const cooldownPeriod = 2000;
+
+      console.log("attack detected");
+
+      if (now - lastAttackTime > cooldownPeriod) {
+        console.log("performAttackDetection called", now - lastAttackTime);
+        performAttackDetection();
+        lastAttackTime = Date.now();
+        console.log({ lastAttackTime });
+      }
     } else {
       actions["2H_Melee_Attack_Slice"].stop();
     }
@@ -43,46 +55,48 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
     }
   });
 
-  // useFrame(() => {
-  //   if (playerRef.current) {
-  //     const worldPosition = new THREE.Vector3();
-  //     const currPosition = playerRef.current.getWorldPosition(worldPosition);
+  useFrame(() => {
+    if (playerRef.current) {
+      playerRef.current.getWorldPosition(playerPositionRef.current);
+    }
+  });
 
-  //     playerPositionRef = currPosition;
+  // function performAttackDetection() {
+  //   const attackRange = 20; // 10 units range
+  //   const attackAngle = Math.PI / 3; // 45 degrees attack angle
+  //   const forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
+  //     playerRef.current.quaternion
+  //   );
+
+  //   const enemyPosition = enemyPositionRef.current;
+  //   const toEnemyDirection = new THREE.Vector3()
+  //     .subVectors(enemyPosition, playerPositionRef.current)
+  //     .normalize();
+  //   const distance = enemyPosition.distanceTo(playerPositionRef.current);
+  //   const angle = forwardDirection.angleTo(toEnemyDirection);
+
+  //   if (distance <= attackRange && angle <= attackAngle) {
+  //     attackEnemy(); // Attack the enemy with 3 damage
   //   }
-  // });
+  // }
 
-  // Function to handle attack detection
   function performAttackDetection() {
-    if (!playerPositionRef) return;
+    const attackRange = 20;
+    const attackAngle = Math.PI / 3; // 60 degrees attack angle
+    const forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
+      playerRef.current.quaternion
+    );
 
-    // const forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
-    //   position.quaternion
-    // );
-    const forwardDirection = new THREE.Vector3(0, 0, -1);
-    forwardDirection.applyQuaternion(playerRef.current.quaternion);
-    const attackRange = 5; // Example attack range
+    const enemyPosition = enemyPositionRef.current;
+    const toEnemyDirection = new THREE.Vector3()
+      .subVectors(enemyPosition, playerPositionRef.current)
+      .normalize();
+    const distance = enemyPosition.distanceTo(playerPositionRef.current);
+    const angle = forwardDirection.angleTo(toEnemyDirection);
 
-    console.log({ enemies });
-    enemies.forEach((enemy) => {
-      console.log(enemy);
-      if (enemy.ref.current && enemy.ref.current.children) {
-        enemy.ref.current.children.forEach((child) => {
-          // const enemyPosition = child.position;
-          const toEnemyDirection = new THREE.Vector3()
-            .subVectors(enemyPositionRef, playerPositionRef)
-            .normalize();
-          const distance = enemyPositionRef.distanceTo(playerPositionRef);
-          const angle = forwardDirection.angleTo(toEnemyDirection);
-
-          if (distance <= attackRange && angle <= Math.PI / 2) {
-            console.log(`Enemy hit at distance ${distance}`, enemyPositionRef);
-            // Apply damage
-            attackEnemy(enemy.ref, 3); // Assuming you still target the group for applying damage
-          }
-        });
-      }
-    });
+    if (distance <= attackRange && angle <= attackAngle) {
+      attackEnemy(); // Attack the enemy with 3 damage
+    }
   }
 
   return <primitive ref={playerRef} object={scene} position={[0, -0.9, 0]} />;
