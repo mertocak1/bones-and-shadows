@@ -31,17 +31,17 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
 
     // Attack logic
     if (attack) {
-      actions["2H_Melee_Attack_Slice"].play();
-
       const now = Date.now();
       const cooldownPeriod = 2000;
 
       console.log("attack detected");
 
       if (now - lastAttackTime > cooldownPeriod) {
+        actions["2H_Melee_Attack_Slice"].play();
+        setTimeout(() => actions["2H_Melee_Attack_Slice"].stop(), 1200);
         console.log("performAttackDetection called", now - lastAttackTime);
-        performAttackDetection();
         lastAttackTime = Date.now();
+        performAttackDetection();
         console.log({ lastAttackTime });
       }
     } else {
@@ -81,7 +81,7 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
   // }
 
   function performAttackDetection() {
-    const attackRange = 20;
+    const attackRange = 10;
     const attackAngle = Math.PI / 3; // 60 degrees attack angle
     const forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
       playerRef.current.quaternion

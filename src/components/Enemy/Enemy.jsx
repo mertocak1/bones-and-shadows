@@ -12,7 +12,7 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
   const { actions } = useAnimations(animations, scene);
   const enemyRef = useRef();
   const rigidBodyRef = useRef();
-  const { addEnemy, removeEnemy, health } = useGame();
+  const { addEnemy, attackPlayer, health } = useGame();
   const enemyId = useRef(Math.random()).current;
   const chaseDistanceThreshold = 8;
   const stableSpeed = 0.2;
@@ -50,7 +50,14 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
       playerPositionRef.current
     );
 
-    if (distanceToPlayer < chaseDistanceThreshold && distanceToPlayer > 1) {
+    if (distanceToPlayer < chaseDistanceThreshold) {
+      if (distanceToPlayer < 2) {
+        actions.Unarmed_Melee_Attack_Punch_B.play();
+        attackPlayer();
+      } else {
+        actions.Unarmed_Melee_Attack_Punch_B.stop();
+      }
+
       const direction = new THREE.Vector3()
         .subVectors(playerPositionRef.current, enemyPositionRef.current)
         .normalize();

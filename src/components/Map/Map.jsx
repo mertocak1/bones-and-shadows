@@ -19,13 +19,7 @@ export default function Level1() {
           <StarterMap />
         </RigidBody>
 
-        <Ecctrl
-          mass={1}
-          debug={true}
-          animated
-          position={[-6, 5, 10]}
-          maxVelLimit={5}
-        >
+        <Ecctrl mass={1} animated position={[-6, 5, 10]} maxVelLimit={5}>
           <Player
             playerPositionRef={playerPositionRef}
             enemyPositionRef={enemyPositionRef}

@@ -6,6 +6,7 @@ export const useGame = () => useContext(GameContext);
 
 export const GameProvider = ({ children }) => {
   const [health, setHealth] = useState(60);
+  const [playerHealth, setPlayerHealth] = useState(100);
   const [enemies, setEnemies] = useState([]);
 
   console.log({ health });
@@ -14,36 +15,6 @@ export const GameProvider = ({ children }) => {
     console.log("add enemy call");
     setEnemies((prev) => [...prev]);
   };
-
-  // const removeEnemy = (enemyRef) => {
-  //   setEnemies((prev) =>
-  //     prev.filter((enemy) => enemy.ref.current !== enemyRef.current)
-  //   );
-  // };
-
-  // // const attackEnemy = (enemyRef, damage) => {
-  // //   console.log(
-  // //     "Before attack:",
-  // //     enemies.map((e) => e.health)
-  // //   );
-
-  // //   setEnemies((enemies) =>
-  // //     enemies
-  // //       .map((enemy) => {
-  // //         if (enemy.ref.current === enemyRef.current) {
-  // //           const newHealth = enemy.health - damage;
-  // //           return {. ...enemy, health: newHealth > 0 ? newHealth : 0 }; // Ensure health doesn't go below 0
-  // //         }
-  // //         return enemy;
-  // //       })
-  // //       .filter((enemy) => enemy.health > 0)
-  // //   ); // Remove dead enemies
-
-  //   console.log(
-  //     "After attack:",
-  //     enemies.map((e) => e.health)
-  //   );
-  // };
 
   const attackEnemy = () => {
     console.log("attacked");
@@ -54,10 +25,19 @@ export const GameProvider = ({ children }) => {
     }
   };
 
+  const attackPlayer = () => {
+    console.log("attacked");
+    if (playerHealth > 0) {
+      setPlayerHealth(playerHealth - 1);
+    } else {
+      console.log("player dead");
+    }
+  };
+
   return (
     <GameContext.Provider
       // value={{ enemies, addEnemy, removeEnemy, attackEnemy }}
-      value={{ attackEnemy, addEnemy, health }}
+      value={{ attackEnemy, addEnemy, health, playerHealth, attackPlayer }}
     >
       {children}
     </GameContext.Provider>
