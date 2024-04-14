@@ -10,17 +10,26 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
   const playerRef = useRef();
   const { scene, animations } = useGLTF(playerUrl);
   const { actions } = useAnimations(animations, scene);
-  // const { enemies, attackEnemy } = useGame();
   const { attackEnemy } = useGame();
   const { camera } = useThree();
-
   const [subscribeKeys, getKeys] = useKeyboardControls();
-  let lastAttackTime = 0;
+  const [isAttacking, setIsAttacking] = useState(false);
+  const [lastAttackTime, setLastAttackTime] = useState(0);
+
+  useEffect(() => {
+    if (isAttacking) {
+      const timeoutId = setTimeout(() => {
+        actions["2H_Melee_Attack_Slice"].stop();
+        setIsAttacking(false);
+      }, 1200); // Stop the attack after 1.2 seconds
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isAttacking, actions["2H_Melee_Attack_Slice"]]);
 
   useFrame(() => {
     const { forward, backward, leftward, rightward, attack } = getKeys();
 
-    // Movement logic...
+    // Movement logic
     if (forward || backward || leftward || rightward) {
       actions.Walking_B.play();
       actions["2H_Melee_Idle"].stop();
@@ -30,24 +39,38 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
     }
 
     // Attack logic
-    if (attack) {
+    if (attack && !isAttacking) {
       const now = Date.now();
       const cooldownPeriod = 2000;
 
-      console.log("attack detected");
-
       if (now - lastAttackTime > cooldownPeriod) {
         actions["2H_Melee_Attack_Slice"].play();
-        setTimeout(() => actions["2H_Melee_Attack_Slice"].stop(), 1200);
-        console.log("performAttackDetection called", now - lastAttackTime);
-        lastAttackTime = Date.now();
+        actions.Walking_B.stop();
+        setIsAttacking(true); // Start the attack animation
+        setLastAttackTime(now);
         performAttackDetection();
-        console.log({ lastAttackTime });
       }
-    } else {
-      actions["2H_Melee_Attack_Slice"].stop();
     }
   });
+
+  function performAttackDetection() {
+    const attackRange = 10;
+    const attackAngle = Math.PI / 3; // 60 degrees attack angle
+    const forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
+      playerRef.current.quaternion
+    );
+
+    const enemyPosition = enemyPositionRef.current;
+    const toEnemyDirection = new THREE.Vector3()
+      .subVectors(enemyPosition, playerPositionRef.current)
+      .normalize();
+    const distance = enemyPosition.distanceTo(playerPositionRef.current);
+    const angle = forwardDirection.angleTo(toEnemyDirection);
+
+    if (distance <= attackRange && angle <= attackAngle) {
+      attackEnemy(); // Attack the enemy
+    }
+  }
 
   useFrame(() => {
     if (playerRef.current) {
@@ -60,25 +83,6 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
       playerRef.current.getWorldPosition(playerPositionRef.current);
     }
   });
-
-  // function performAttackDetection() {
-  //   const attackRange = 20; // 10 units range
-  //   const attackAngle = Math.PI / 3; // 45 degrees attack angle
-  //   const forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
-  //     playerRef.current.quaternion
-  //   );
-
-  //   const enemyPosition = enemyPositionRef.current;
-  //   const toEnemyDirection = new THREE.Vector3()
-  //     .subVectors(enemyPosition, playerPositionRef.current)
-  //     .normalize();
-  //   const distance = enemyPosition.distanceTo(playerPositionRef.current);
-  //   const angle = forwardDirection.angleTo(toEnemyDirection);
-
-  //   if (distance <= attackRange && angle <= attackAngle) {
-  //     attackEnemy(); // Attack the enemy with 3 damage
-  //   }
-  // }
 
   function performAttackDetection() {
     const attackRange = 10;

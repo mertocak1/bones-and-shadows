@@ -1,7 +1,7 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useGLTF, useAnimations } from "@react-three/drei";
-import { RigidBody, CapsuleCollider } from "@react-three/rapier";
+import { RigidBody } from "@react-three/rapier";
 import { useGame } from "../../GameContext";
 import * as THREE from "three";
 
@@ -16,6 +16,8 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
   const enemyId = useRef(Math.random()).current;
   const chaseDistanceThreshold = 8;
   const stableSpeed = 0.2;
+  const [lastAttackTime, setLastAttackTime] = useState(0);
+  const [isAttacking, setIsAttacking] = useState(false);
 
   useEffect(() => {
     const enemyObject = { ref: enemyRef, health, id: enemyId };
@@ -23,7 +25,17 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
     addEnemy(enemyObject);
   }, []);
 
-  useFrame(() => {
+  useEffect(() => {
+    if (isAttacking) {
+      const timeoutId = setTimeout(() => {
+        actions.Unarmed_Melee_Attack_Punch_B.stop();
+        setIsAttacking(false);
+      }, 800); // Stop the attack after 1 second
+      return () => clearTimeout(timeoutId);
+    }
+  }, [isAttacking, actions.Unarmed_Melee_Attack_Punch_B]);
+
+  useFrame(({ clock }) => {
     if (
       !enemyRef.current ||
       !playerPositionRef.current ||
@@ -49,18 +61,12 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
     const distanceToPlayer = enemyPositionRef.current.distanceTo(
       playerPositionRef.current
     );
+    const direction = new THREE.Vector3()
+      .subVectors(playerPositionRef.current, enemyPositionRef.current)
+      .normalize();
+    const currentTime = clock.getElapsedTime();
 
     if (distanceToPlayer < chaseDistanceThreshold) {
-      if (distanceToPlayer < 2) {
-        actions.Unarmed_Melee_Attack_Punch_B.play();
-        attackPlayer();
-      } else {
-        actions.Unarmed_Melee_Attack_Punch_B.stop();
-      }
-
-      const direction = new THREE.Vector3()
-        .subVectors(playerPositionRef.current, enemyPositionRef.current)
-        .normalize();
       actions.Walking_A.play();
       actions.Idle.stop();
 
@@ -74,16 +80,26 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
       const forward = new THREE.Vector3(0, 0, -1);
       forward.applyQuaternion(quaternion);
       forward.multiplyScalar(stableSpeed);
-
       rigidBodyRef.current.applyImpulse({
         x: forward.x,
         y: forward.y,
         z: forward.z,
       });
+
+      if (distanceToPlayer < 1.2 && currentTime - lastAttackTime > 2) {
+        if (!isAttacking) {
+          actions.Unarmed_Melee_Attack_Punch_B.play();
+          setIsAttacking(true); // Start the attack animation
+          attackPlayer();
+          setLastAttackTime(currentTime);
+        }
+      }
     } else {
-      rigidBodyRef.current.addForce({ x: 0, y: 0, z: 0 });
       actions.Idle.play();
       actions.Walking_A.stop();
+      if (rigidBodyRef.current.velocity) {
+        rigidBodyRef.current.velocity.set(0, 0, 0);
+      }
     }
   });
 
@@ -93,15 +109,13 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
         type="dynamic"
         position={[6, 1, 5]}
         ref={rigidBodyRef}
-        linearDamping={5}
-        colliders={false}
+        linearDamping={5} // Increased linear damping for stability
+        angularDamping={1} // Ensure the enemy doesn't rotate unexpectedly
         mass={1}
         canSleep={false}
-        lockTranslationY={true}
         rotation={[0, 3, 0]}
       >
         <primitive position={[0, 0.4, 0]} ref={enemyRef} object={scene} />
-        <CapsuleCollider args={[0.4, 0.5]} position={[0, 1.28, 0]} />
       </RigidBody>
     </group>
   ) : null;
