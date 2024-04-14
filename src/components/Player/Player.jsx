@@ -6,15 +6,19 @@ import * as THREE from "three";
 
 const playerUrl = "/src/assets/char/barbar.glb";
 
-export default function Player({ playerPositionRef, enemyPositionRef }) {
+export default function Player({
+  playerPositionRef,
+  enemyPositionRef,
+  playerRigidBody,
+}) {
   const playerRef = useRef();
   const { scene, animations } = useGLTF(playerUrl);
   const { actions } = useAnimations(animations, scene);
   const { attackEnemy } = useGame();
-  const { camera } = useThree();
   const [subscribeKeys, getKeys] = useKeyboardControls();
   const [isAttacking, setIsAttacking] = useState(false);
   const [lastAttackTime, setLastAttackTime] = useState(0);
+  const lastDirection = useRef(new THREE.Vector3(0, 0, 1)); // Default facing direction
 
   useEffect(() => {
     if (isAttacking) {
@@ -29,7 +33,11 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
   useFrame(() => {
     const { forward, backward, leftward, rightward, attack } = getKeys();
 
-    // Movement logic
+    // Update player direction based on axesHelper which reflects actual forward direction
+    const axesHelperDirection = new THREE.Vector3();
+    playerRef.current.getWorldDirection(axesHelperDirection);
+    lastDirection.current.copy(axesHelperDirection.normalize());
+
     if (forward || backward || leftward || rightward) {
       actions.Walking_B.play();
       actions["2H_Melee_Idle"].stop();
@@ -38,15 +46,17 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
       actions.Walking_B.stop();
     }
 
-    // Attack logic
+    if (playerRef.current) {
+      playerRef.current.getWorldPosition(playerPositionRef.current);
+    }
+
     if (attack && !isAttacking) {
       const now = Date.now();
-      const cooldownPeriod = 2000;
-
+      const cooldownPeriod = 2000; // 2 seconds cooldown between attacks
       if (now - lastAttackTime > cooldownPeriod) {
         actions["2H_Melee_Attack_Slice"].play();
         actions.Walking_B.stop();
-        setIsAttacking(true); // Start the attack animation
+        setIsAttacking(true);
         setLastAttackTime(now);
         performAttackDetection();
       }
@@ -54,54 +64,31 @@ export default function Player({ playerPositionRef, enemyPositionRef }) {
   });
 
   function performAttackDetection() {
-    const attackRange = 10;
+    const attackRange = 2;
     const attackAngle = Math.PI / 3; // 60 degrees attack angle
-    const forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
-      playerRef.current.quaternion
-    );
+    const forwardDirection = lastDirection.current;
 
     const enemyPosition = enemyPositionRef.current;
+    const playerPosition = playerPositionRef.current;
     const toEnemyDirection = new THREE.Vector3()
-      .subVectors(enemyPosition, playerPositionRef.current)
+      .subVectors(enemyPosition, playerPosition)
       .normalize();
-    const distance = enemyPosition.distanceTo(playerPositionRef.current);
+    const distance = enemyPosition.distanceTo(playerPosition);
     const angle = forwardDirection.angleTo(toEnemyDirection);
 
     if (distance <= attackRange && angle <= attackAngle) {
-      attackEnemy(); // Attack the enemy
+      attackEnemy(); // Execute attack if within range and angle
     }
   }
 
-  useFrame(() => {
-    if (playerRef.current) {
-      playerRef.current.getWorldPosition(playerPositionRef.current);
-    }
-  });
-
-  useFrame(() => {
-    if (playerRef.current) {
-      playerRef.current.getWorldPosition(playerPositionRef.current);
-    }
-  });
-
-  function performAttackDetection() {
-    const attackRange = 10;
-    const attackAngle = Math.PI / 3; // 60 degrees attack angle
-    const forwardDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(
-      playerRef.current.quaternion
-    );
-
-    const enemyPosition = enemyPositionRef.current;
-    const toEnemyDirection = new THREE.Vector3()
-      .subVectors(enemyPosition, playerPositionRef.current)
-      .normalize();
-    const distance = enemyPosition.distanceTo(playerPositionRef.current);
-    const angle = forwardDirection.angleTo(toEnemyDirection);
-
-    if (distance <= attackRange && angle <= attackAngle) {
-      attackEnemy(); // Attack the enemy with 3 damage
-    }
-  }
-
-  return <primitive ref={playerRef} object={scene} position={[0, -0.9, 0]} />;
+  return (
+    <>
+      <primitive ref={playerRef} object={scene} position={[0, -0.9, 0]} />
+      <axesHelper
+        args={[2]}
+        position={playerPositionRef.current}
+        scale={[1, 1, 1]} // Scale up for visibility
+      />
+    </>
+  );
 }

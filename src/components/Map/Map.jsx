@@ -9,6 +9,7 @@ import * as THREE from "three";
 export default function Level1() {
   const playerPositionRef = useRef(new THREE.Vector3());
   const enemyPositionRef = useRef(new THREE.Vector3());
+  const playerRigidBody = useRef();
   return (
     <>
       <ambientLight intensity={0.5} />
@@ -19,10 +20,17 @@ export default function Level1() {
           <StarterMap />
         </RigidBody>
 
-        <Ecctrl mass={1} animated position={[-6, 5, 10]} maxVelLimit={5}>
+        <Ecctrl
+          ref={playerRigidBody}
+          mass={1}
+          animated
+          position={[-6, 5, 10]}
+          maxVelLimit={6}
+        >
           <Player
             playerPositionRef={playerPositionRef}
             enemyPositionRef={enemyPositionRef}
+            playerRigidBody={playerRigidBody}
           />
         </Ecctrl>
 
