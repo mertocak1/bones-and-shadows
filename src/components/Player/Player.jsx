@@ -33,7 +33,6 @@ export default function Player({
   useFrame(() => {
     const { forward, backward, leftward, rightward, attack } = getKeys();
 
-    // Update player direction based on axesHelper which reflects actual forward direction
     const axesHelperDirection = new THREE.Vector3();
     playerRef.current.getWorldDirection(axesHelperDirection);
     lastDirection.current.copy(axesHelperDirection.normalize());
@@ -77,18 +76,13 @@ export default function Player({
     const angle = forwardDirection.angleTo(toEnemyDirection);
 
     if (distance <= attackRange && angle <= attackAngle) {
-      attackEnemy(); // Execute attack if within range and angle
+      attackEnemy();
     }
   }
 
   return (
     <>
       <primitive ref={playerRef} object={scene} position={[0, -0.9, 0]} />
-      <axesHelper
-        args={[2]}
-        position={playerPositionRef.current}
-        scale={[1, 1, 1]} // Scale up for visibility
-      />
     </>
   );
 }

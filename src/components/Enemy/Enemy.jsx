@@ -89,7 +89,7 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
       if (distanceToPlayer < 1.2 && currentTime - lastAttackTime > 2) {
         if (!isAttacking) {
           actions.Unarmed_Melee_Attack_Punch_B.play();
-          setIsAttacking(true); // Start the attack animation
+          setIsAttacking(true);
           attackPlayer();
           setLastAttackTime(currentTime);
         }
@@ -109,8 +109,8 @@ export default function Enemy({ playerPositionRef, enemyPositionRef }) {
         type="dynamic"
         position={[6, 1, 5]}
         ref={rigidBodyRef}
-        linearDamping={5} // Increased linear damping for stability
-        angularDamping={1} // Ensure the enemy doesn't rotate unexpectedly
+        linearDamping={5}
+        angularDamping={1}
         mass={1}
         canSleep={false}
         rotation={[0, 3, 0]}

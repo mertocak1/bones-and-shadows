@@ -11,7 +11,6 @@ export const GameProvider = ({ children }) => {
 
   console.log({ health });
   const addEnemy = (object) => {
-    // Ensure the enemy is added with a unique key or identifier if needed
     console.log("add enemy call");
     setEnemies((prev) => [...prev]);
   };
@@ -19,7 +18,7 @@ export const GameProvider = ({ children }) => {
   const attackEnemy = () => {
     console.log("attacked");
     if (health > 0) {
-      setHealth(health - 1);
+      setHealth(health - 5);
     } else {
       console.log("enemy dead");
     }
@@ -28,7 +27,7 @@ export const GameProvider = ({ children }) => {
   const attackPlayer = () => {
     console.log("attacked");
     if (playerHealth > 0) {
-      setPlayerHealth(playerHealth - 1);
+      setPlayerHealth(playerHealth - 3);
     } else {
       console.log("player dead");
     }
@@ -36,7 +35,6 @@ export const GameProvider = ({ children }) => {
 
   return (
     <GameContext.Provider
-      // value={{ enemies, addEnemy, removeEnemy, attackEnemy }}
       value={{ attackEnemy, addEnemy, health, playerHealth, attackPlayer }}
     >
       {children}

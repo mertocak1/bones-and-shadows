@@ -15,7 +15,6 @@ export default function Level1() {
       <ambientLight intensity={0.5} />
       <directionalLight position={[0, 10, 5]} intensity={0.5} />
       <Suspense fallback={null}>
-        {/* Fixed RigidBody for the environment */}
         <RigidBody mass={1} colliders="trimesh" type="fixed">
           <StarterMap />
         </RigidBody>

@@ -31,7 +31,10 @@ function App() {
   return (
     <GameProvider>
       <KeyboardControls map={keyboardMap}>
-        <HealthBarWithGame title={"Minion Skeleton"} />
+        <HealthBarWithGame
+          title={"Minion Skeleton"}
+          avatarUrl="./assets/profilePic/barbarpp.png"
+        />
         <HealthBarWithGame title={"Player"} />
 
         <Canvas>
