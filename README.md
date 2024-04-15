@@ -4,7 +4,7 @@ Bones and Shadows
 
 ## Overview
 
-The Dungeon RPG game is an immersive adventure set in a fantasy world filled with dungeons, monsters, and treasures waiting to be discovered. Players take on the role of a brave adventurer who embarks on a perilous journey through various levels of dungeons, encountering challenges and battles along the way. With stunning visuals and engaging gameplay mechanics, players will delve deep into the depths of the dungeons, facing off against formidable foes and uncovering the secrets hidden within.
+The Bones and Shadows game is an immersive adventure set in a fantasy world filled with dungeons, monsters, and treasures waiting to be discovered. Players take on the role of a brave adventurer who embarks on a perilous journey through various levels of dungeons, encountering challenges and battles along the way. With stunning visuals and engaging gameplay mechanics, players will delve deep into the depths of the dungeons, facing off against formidable foes and uncovering the secrets hidden within.
 
 ### User Profile
 
