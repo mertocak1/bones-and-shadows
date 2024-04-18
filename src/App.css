@@ -3,4 +3,87 @@ html, body, #root {
   margin: 0;
   padding: 0;
   overflow: hidden;
+  font-family: "Roboto Mono", monospace;
+}
+
+.container {
+  color: #3bd7c2;
+  font-weight: bold;
+  letter-spacing: 0.01rem;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.5); 
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  z-index: 1000;
+  border-radius: 10px;
+}
+
+.play-again-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 10;
+}
+
+.message {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.button {
+  margin: 10px;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  background: linear-gradient(145deg, #ffd06b, #ff494c);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.button:hover {
+  background: linear-gradient(145deg, #fdc54c, #f73033);
+  box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.button:active {
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  transform: translateY(1px);
+}
+
+.top-text {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 20px;
+  color: white; 
+  z-index: 1000; 
+  background-color: rgba(0, 0, 0, 0.5); 
+  padding: 5px 10px;  
+  border-radius: 5px; 
+}
+
+.logo {
+  width: 70px;
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  font-size: 20px;
+  color: white; 
+  z-index: 1000; 
+  background-color: rgba(0, 0, 0, 0.5); 
+  padding: 5px 10px;  
+  border-radius: 5px; 
+}
+
+.title-wraper{
+  display: flex;
 }

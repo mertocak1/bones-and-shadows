@@ -18,7 +18,7 @@ export const GameProvider = ({ children }) => {
   const attackEnemy = () => {
     console.log("attacked");
     if (health > 0) {
-      setHealth(health - 5);
+      setHealth(health - 9);
     } else {
       console.log("enemy dead");
     }
@@ -27,7 +27,7 @@ export const GameProvider = ({ children }) => {
   const attackPlayer = () => {
     console.log("attacked");
     if (playerHealth > 0) {
-      setPlayerHealth(playerHealth - 3);
+      setPlayerHealth(playerHealth - 5);
     } else {
       console.log("player dead");
     }
