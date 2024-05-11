@@ -9,27 +9,20 @@ export const GameProvider = ({ children }) => {
   const [playerHealth, setPlayerHealth] = useState(100);
   const [enemies, setEnemies] = useState([]);
 
-  console.log({ health });
   const addEnemy = (object) => {
-    console.log("add enemy call");
     setEnemies((prev) => [...prev]);
   };
 
   const attackEnemy = () => {
-    console.log("attacked");
     if (health > 0) {
       setHealth(health - 9);
     } else {
-      console.log("enemy dead");
     }
   };
 
   const attackPlayer = () => {
-    console.log("attacked");
     if (playerHealth > 0) {
       setPlayerHealth(playerHealth - 5);
-    } else {
-      console.log("player dead");
     }
   };
 
